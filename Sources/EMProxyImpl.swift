@@ -27,25 +27,25 @@ public enum EMProxyError: Error, LocalizedError, CustomStringConvertible, Equata
     public var description: String {
         switch self {
         case .invalidBindAddressPointer:
-            return "Invalid bind address pointer"
+            return "绑定地址指针无效"
         case .invalidUTF8String:
-            return "Failed to convert bind address to UTF-8"
+            return "将绑定地址转换为 UTF-8 失败"
         case .invalidSocketAddress(let addr):
-            return "Invalid IPv4 socket address format: \(addr)"
+            return "IPv4 套接字地址格式无效：\(addr)"
         case .socketBindFailed:
-            return "Failed to bind to UDP socket address"
+            return "绑定 UDP 套接字地址失败"
         case .cryptoInitFailed:
-            return "Failed to initialize EMProxy crypto keys"
+            return "初始化 EMProxy 加密密钥失败"
         case .serverNotRunning:
-            return "EMProxy server is not running"
+            return "EMProxy 服务器未运行"
         case .stopSignalFailed:
-            return "Failed to send stop signal to EMProxy server"
+            return "向 EMProxy 服务器发送停止信号失败"
         case .threadJoinFailed:
-            return "Failed to join EMProxy loopback thread"
+            return "等待 EMProxy 回环线程结束失败"
         case .handshakeClientNotConfigured:
-            return "EMProxy WireGuard VPN handshake client not configured"
+            return "未配置 EMProxy 的 WireGuard VPN 握手客户端"
         case .unknownError(let code):
-            return "EMProxy error code: \(code)"
+            return "EMProxy 错误代码：\(code)"
         }
     }
 

@@ -35,21 +35,21 @@ open class DeviceGatewayError: LocalizedError, CustomStringConvertible, @uncheck
     open var errorDescription: String? {
         switch code {
         case .invalidPairingFile:
-            return "The pairing file is invalid: \(reason)"
+            return "配对文件无效：\(reason)"
         case .connectionFailed:
-            return "Failed to connect to device: \(reason)"
+            return "连接设备失败：\(reason)"
         case .serviceError:
-            return "Service operation failed: \(reason)"
+            return "服务操作失败：\(reason)"
         case .noConnection:
-            return reason.isEmpty ? "No connection to the device." : reason
+            return reason.isEmpty ? "未连接到设备。" : reason
         case .notInitialized:
-            return reason.isEmpty ? "DeviceGateway not initialized. start() should be called first." : reason
+            return reason.isEmpty ? "DeviceGateway 尚未初始化，应先调用 start()。" : reason
         case .deviceEndpointIpNotAvailable:
-            return reason.isEmpty ? "Device endpoint IP is not available." : reason
+            return reason.isEmpty ? "设备端点 IP 不可用。" : reason
         case .invalidTargetEndpoint:
-            return reason.isEmpty ? "Invalid target endpoint IP or port." : reason
+            return reason.isEmpty ? "目标端点 IP 或端口无效。" : reason
         case .unsupportedOperation:
-            return "Operation '\(reason)' is not supported."
+            return "不支持操作“\(reason)”。"
         default:
             return reason
         }

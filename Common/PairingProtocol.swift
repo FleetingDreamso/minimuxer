@@ -17,18 +17,18 @@ public enum PairingError: LocalizedError, CustomStringConvertible, Sendable {
     public var errorDescription: String? {
         switch self {
         case .unreadable(let reason):
-            return "The pairing file could not be read: \(reason)"
+            return "无法读取配对文件：\(reason)"
         case .invalidPlist(let reason):
-            return "The pairing file could not be parsed as a property list (plist): \(reason)"
+            return "配对文件无法解析为属性列表（plist）：\(reason)"
         case .incomplete(let protocolType, let missingKeys):
-            return "The pairing file is incomplete for .\(protocolType). Missing keys: \(missingKeys.joined(separator: ", "))."
+            return "配对文件对 .\(protocolType) 而言不完整。缺少的键：\(missingKeys.joined(separator: "、"))。"
         case .ambiguous(let reason):
-            return "The pairing file format is ambiguous: \(reason)"
+            return "配对文件格式存在歧义：\(reason)"
         }
     }
 
     public var description: String {
-        errorDescription ?? "Pairing error"
+        errorDescription ?? "配对错误"
     }
 }
 

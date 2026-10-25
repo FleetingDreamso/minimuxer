@@ -36,7 +36,7 @@ final internal class Mounter {
         // Prerequisite: device must be reachable
         guard (try? await self.endpoint.ip()) != nil else {
             debugLog("[minimuxer] mounter: device IP not available")
-            throw MinimuxerError.noDevice("Reachable device IP not found")
+            throw MinimuxerError.noDevice("未找到可访问的设备 IP")
         }
 
         let isDDIMounted = try await self.gateway.isDDIMounted()
@@ -93,7 +93,7 @@ final internal class Mounter {
         verboseLog("[minimuxer] Downloading \(localURL.lastPathComponent)...")
         guard let data = try? Data(contentsOf: url) else {
             debugLog("[minimuxer] ERROR: Failed to download \(localURL.lastPathComponent)")
-            throw MinimuxerError.downloadImage("Failed to download file from \(url.absoluteString)")
+            throw MinimuxerError.downloadImage("无法从 \(url.absoluteString) 下载文件")
         }
         try data.write(to: localURL)
         return data
@@ -114,7 +114,7 @@ final internal class Mounter {
                   let dmgUrl = URL(string: dmgUrlStr) else 
             {
                 debugLog("[minimuxer] ERROR: Unable to download DMG dictionary or find version")
-                throw MinimuxerError.downloadImage("Failed to retrieve pre-17 versions plist or find iOS \(iosVersion) DMG URL")
+                throw MinimuxerError.downloadImage("无法获取 iOS 17 之前的版本 plist，或未找到 iOS \(iosVersion) 的 DMG URL")
             }
 
             let zipURL = URL(fileURLWithPath: "\(dmgDocsPath)/dmg.zip")
@@ -150,7 +150,7 @@ final internal class Mounter {
               let sigData = try? Data(contentsOf: sigURL) else 
         {
             debugLog("[minimuxer] ERROR: Unable to read developer disk image or signature files")
-            throw MinimuxerError.mount(protocol: .lockdown, reason: "Unable to read pre-17 image files at: \(dmgURL.path)")
+            throw MinimuxerError.mount(protocol: .lockdown, reason: "无法读取 iOS 17 之前的映像文件：\(dmgURL.path)")
         }
         return (dmgData, sigData)
     }
@@ -162,7 +162,7 @@ final internal class Mounter {
               let mftURL = URL(string: MinimuxerConstants.ddiManifestURL) else 
         {
             debugLog("[minimuxer] ERROR: Invalid post-17 DDI URLs configured")
-            throw MinimuxerError.downloadImage("Invalid post-17 DDI URLs configured")
+            throw MinimuxerError.downloadImage("配置的 post-17 DDI 链接无效")
         }
 
         let imageData = try getOrDownload(url: imgURL, localURL: dir.appendingPathComponent("Image.dmg"))

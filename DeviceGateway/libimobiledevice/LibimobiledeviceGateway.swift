@@ -17,15 +17,15 @@ internal final class LibimobiledeviceGatewayError: DeviceGatewayError, @unchecke
     override var errorDescription: String? {
         switch code {
         case .connectionFailed:
-            return "Failed to connect to device via libimobiledevice: \(reason)"
+            return "通过 libimobiledevice 连接设备失败：\(reason)"
         case .serviceError:
-            return "libimobiledevice service operation failed: \(reason)"
+            return "libimobiledevice 服务操作失败：\(reason)"
         case .noConnection:
-            return "No connection to the device via libimobiledevice."
+            return "通过 libimobiledevice 未连接到设备。"
         case .notInitialized:
-            return "LibimobiledeviceGateway not initialized. start() should be called first."
+            return "LibimobiledeviceGateway 尚未初始化，应先调用 start()。"
         case .unsupportedOperation:
-            return "Operation '\(reason)' is not supported by libimobiledevice gateway."
+            return "libimobiledevice 网关不支持操作“\(reason)”。"
         default:
             return super.errorDescription
         }
@@ -140,7 +140,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
     private func requireDeviceEndpointIp() throws -> String {
         guard let ip = self.deviceEndpointIp, !ip.isEmpty else {
             debugLog("[LibimobiledeviceGateway] operation failed because deviceEndpointIp is nil or empty")
-            throw LibimobiledeviceGatewayError(.deviceEndpointIpNotAvailable, reason: "Device endpoint IP has not been configured")
+            throw LibimobiledeviceGatewayError(.deviceEndpointIpNotAvailable, reason: "尚未配置设备端点 IP")
         }
         return ip
     }
@@ -148,14 +148,14 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
     private func withRPClient<T>(_ body: (rppairing_client_t) throws -> T) throws -> T {
         try verifyInitialized()
         guard let identity = rpIdentity else {
-            throw LibimobiledeviceGatewayError(.notInitialized, reason: "RPPairing identity not loaded")
+            throw LibimobiledeviceGatewayError(.notInitialized, reason: "未加载 RPPairing 身份")
         }
         let host = try requireDeviceEndpointIp()
         let port = getPort(for: .rppairing)
         var client: rppairing_client_t? = nil
         let err = rppairing_client_new(host, port, MinimuxerConstants.appName, &client)
         guard err == RPPAIRING_E_SUCCESS, let client = client else {
-            throw LibimobiledeviceGatewayError(.connectionFailed, reason: "rppairing_client_new failed to connect to \(host):\(port): code \(err.rawValue)")
+            throw LibimobiledeviceGatewayError(.connectionFailed, reason: "rppairing_client_new 连接 \(host):\(port) 失败：代码 \(err.rawValue)")
         }
         defer { rppairing_client_free(client) }
 
@@ -163,7 +163,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
         let connErr = rppairing_pair_verify(client, &mutIdentity)
         guard connErr == RPPAIRING_E_SUCCESS else {
             debugLog("[LibimobiledeviceGateway] rppairing_pair_verify failed with code: \(connErr.rawValue)")
-            throw LibimobiledeviceGatewayError(.connectionFailed, reason: "rppairing_pair_verify failed: code \(connErr.rawValue)")
+            throw LibimobiledeviceGatewayError(.connectionFailed, reason: "rppairing_pair_verify 调用失败：代码 \(connErr.rawValue)")
         }
         debugLog("[LibimobiledeviceGateway] rppairing_pair_verify succeeded!")
 
@@ -197,7 +197,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
             let listErr = rppairing_create_tunnel_listener(client, &tunnelPort)
             guard listErr == RPPAIRING_E_SUCCESS else {
                 debugLog("[LibimobiledeviceGateway] rppairing_create_tunnel_listener failed: \(listErr.rawValue)")
-                throw LibimobiledeviceGatewayError(.serviceError, reason: "rppairing_create_tunnel_listener failed: code \(listErr.rawValue)")
+                throw LibimobiledeviceGatewayError(.serviceError, reason: "rppairing_create_tunnel_listener 调用失败：代码 \(listErr.rawValue)")
             }
             debugLog("[LibimobiledeviceGateway] tunnel listener created on port: \(tunnelPort)")
 
@@ -206,7 +206,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
             let keyErr = rppairing_get_encryption_key(client, &psk, &pskLen)
             guard keyErr == RPPAIRING_E_SUCCESS else {
                 debugLog("[LibimobiledeviceGateway] rppairing_get_encryption_key failed: \(keyErr.rawValue)")
-                throw LibimobiledeviceGatewayError(.serviceError, reason: "rppairing_get_encryption_key failed: code \(keyErr.rawValue)")
+                throw LibimobiledeviceGatewayError(.serviceError, reason: "rppairing_get_encryption_key 调用失败：代码 \(keyErr.rawValue)")
             }
             debugLog("[LibimobiledeviceGateway] encryption key retrieved (\(pskLen) bytes)")
 
@@ -215,7 +215,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
             let tunErr = rppairing_tunnel_connect(host, tunnelPort, psk, pskLen, &tunnelInfo, &tunnel)
             guard tunErr == RPPAIRING_E_SUCCESS, let tunnel = tunnel else {
                 debugLog("[LibimobiledeviceGateway] rppairing_tunnel_connect failed: \(tunErr.rawValue)")
-                throw LibimobiledeviceGatewayError(.connectionFailed, reason: "rppairing_tunnel_connect failed: code \(tunErr.rawValue)")
+                throw LibimobiledeviceGatewayError(.connectionFailed, reason: "rppairing_tunnel_connect 调用失败：代码 \(tunErr.rawValue)")
             }
 
             let serverAddr = withUnsafePointer(to: &tunnelInfo.server_address) { ptr in
@@ -252,7 +252,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
         var rsd: rppairing_rsd_t? = nil
         let rsdErr = rppairing_rsd_connect(tunnel, &rsd)
         guard rsdErr == RPPAIRING_E_SUCCESS, let rsd = rsd else {
-            throw LibimobiledeviceGatewayError(.serviceError, reason: "rppairing_rsd_connect failed: code \(rsdErr.rawValue)")
+            throw LibimobiledeviceGatewayError(.serviceError, reason: "rppairing_rsd_connect 调用失败：代码 \(rsdErr.rawValue)")
         }
         self.activeRsd = rsd
         return rsd
@@ -265,14 +265,14 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
             var servicePort: UInt16 = 0
             let portErr = rppairing_rsd_get_service_port(rsd, service.rawValue, &servicePort)
             guard portErr == RPPAIRING_E_SUCCESS, servicePort > 0 else {
-                throw LibimobiledeviceGatewayError(.serviceError, reason: "RSD service \(service.rawValue) not found or port invalid (code \(portErr.rawValue))")
+                throw LibimobiledeviceGatewayError(.serviceError, reason: "未找到 RSD 服务 \(service.rawValue)，或端口无效（代码 \(portErr.rawValue)）")
             }
 
             debugLog("[LibimobiledeviceGateway] Connecting to RSD service \(service.rawValue) on port \(servicePort)...")
             var stream: rppairing_service_stream_t? = nil
             let streamErr = rppairing_connect_service_stream(tunnel, servicePort, &stream)
             guard streamErr == RPPAIRING_E_SUCCESS, let stream = stream else {
-                throw LibimobiledeviceGatewayError(.serviceError, reason: "rppairing_connect_service_stream failed: code \(streamErr.rawValue)")
+                throw LibimobiledeviceGatewayError(.serviceError, reason: "rppairing_connect_service_stream 调用失败：代码 \(streamErr.rawValue)")
             }
             defer { rppairing_service_stream_close(stream) }
 
@@ -294,11 +294,11 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
     private func rsdSendPlist(_ stream: rppairing_service_stream_t, dict: [String: Any]) throws {
         let plistData = try PropertyListSerialization.data(fromPropertyList: dict, format: .xml, options: 0)
         guard let xmlStr = String(data: plistData, encoding: .utf8) else {
-            throw LibimobiledeviceGatewayError(.serviceError, reason: "Failed to encode XML Plist")
+            throw LibimobiledeviceGatewayError(.serviceError, reason: "编码 XML Plist 失败")
         }
         let err = rppairing_service_stream_send_plist(stream, xmlStr, xmlStr.utf8.count)
         if err != RPPAIRING_E_SUCCESS {
-            throw LibimobiledeviceGatewayError(.serviceError, reason: "rsdSendPlist failed: code \(err.rawValue)")
+            throw LibimobiledeviceGatewayError(.serviceError, reason: "rsdSendPlist 调用失败：代码 \(err.rawValue)")
         }
     }
 
@@ -307,7 +307,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
         var outLen: Int = 0
         let err = rppairing_service_stream_recv_plist(stream, &outXml, &outLen, timeoutMs)
         guard err == RPPAIRING_E_SUCCESS, let outXml = outXml else {
-            throw LibimobiledeviceGatewayError(.serviceError, reason: "rsdRecvPlist failed: code \(err.rawValue)")
+            throw LibimobiledeviceGatewayError(.serviceError, reason: "rsdRecvPlist 调用失败：代码 \(err.rawValue)")
         }
         defer { free(outXml) }
 
@@ -328,7 +328,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
         let opts = idevice_options(rawValue: IDEVICE_LOOKUP_USBMUX.rawValue | IDEVICE_LOOKUP_NETWORK.rawValue)
         let err = idevice_new_with_options(&device, udid, opts)
         guard err == IDEVICE_E_SUCCESS, let device = device else {
-            throw LibimobiledeviceGatewayError(.connectionFailed, reason: "idevice_new_with_options failed with code \(err.rawValue)")
+            throw LibimobiledeviceGatewayError(.connectionFailed, reason: "idevice_new_with_options 调用失败，代码 \(err.rawValue)")
         }
         defer { idevice_free(device) }
         return try body(device)
@@ -340,7 +340,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
             var client: lockdownd_client_t? = nil
             let err = lockdownd_client_new_with_handshake(device, &client, nil)
             guard err == LOCKDOWN_E_SUCCESS, let client = client else {
-                throw LibimobiledeviceGatewayError(.connectionFailed, reason: "lockdownd_client_new_with_handshake failed with code \(err.rawValue)")
+                throw LibimobiledeviceGatewayError(.connectionFailed, reason: "lockdownd_client_new_with_handshake 调用失败，代码 \(err.rawValue)")
             }
             defer { lockdownd_client_free(client) }
             return try body(device, client)
@@ -358,14 +358,14 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
             var serviceDescriptor: lockdownd_service_descriptor_t? = nil
             let sErr = lockdownd_start_service(lockdown, service.rawValue, &serviceDescriptor)
             guard sErr == LOCKDOWN_E_SUCCESS, let serviceDescriptor = serviceDescriptor else {
-                throw LibimobiledeviceGatewayError(.serviceError, reason: "Failed to start lockdown service '\(service.rawValue)': code \(sErr.rawValue)")
+                throw LibimobiledeviceGatewayError(.serviceError, reason: "启动 lockdown 服务“\(service.rawValue)”失败：代码 \(sErr.rawValue)")
             }
             defer { lockdownd_service_descriptor_free(serviceDescriptor) }
 
             var client: Client? = nil
             let cErr = create(device, serviceDescriptor, &client)
             guard cErr.rawValue == 0, let client = client else {
-                throw LibimobiledeviceGatewayError(.serviceError, reason: "Failed to create client for '\(service.rawValue)': code \(cErr.rawValue)")
+                throw LibimobiledeviceGatewayError(.serviceError, reason: "为“\(service.rawValue)”创建客户端失败：代码 \(cErr.rawValue)")
             }
             defer { _ = cleanup(client) }
             return try body(client)
@@ -386,13 +386,13 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
                 rppairing_identity_from_plist(cStr, pairingFileContent.utf8.count, &identity)
             }
             guard err == RPPAIRING_E_SUCCESS else {
-                throw LibimobiledeviceGatewayError(.invalidPairingFile, reason: "rppairing_identity_from_plist failed with code \(err.rawValue)")
+                throw LibimobiledeviceGatewayError(.invalidPairingFile, reason: "rppairing_identity_from_plist 调用失败，代码 \(err.rawValue)")
             }
             self.rpIdentity = identity
         } else if let lockdown = pairingFile as? LockdownPairingFile {
             let udid = lockdown.udid
             guard !udid.isEmpty else {
-                throw LibimobiledeviceGatewayError(.invalidPairingFile, reason: "Missing UDID in pairing file")
+                throw LibimobiledeviceGatewayError(.invalidPairingFile, reason: "配对文件中缺少 UDID")
             }
             self.cachedUDID = udid
         }
@@ -417,7 +417,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
         if let cached = cachedUDID, !cached.isEmpty {
             return cached
         }
-        throw LibimobiledeviceGatewayError(.serviceError, reason: "UniqueDeviceID not found on device")
+        throw LibimobiledeviceGatewayError(.serviceError, reason: "设备上未找到 UniqueDeviceID")
     }
 
     func syncGetLockdownValue(key: String) throws -> String {
@@ -428,7 +428,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
                 debugLog("[LibimobiledeviceGateway] syncGetLockdownValue(\(key)) response: \(resp)")
                 guard let val = resp["Value"] as? String else {
                     debugLog("[LibimobiledeviceGateway] syncGetLockdownValue(\(key)) Value missing or invalid: \(resp)")
-                    throw LibimobiledeviceGatewayError(.serviceError, reason: "Lockdown value for key '\(key)' is missing or invalid")
+                    throw LibimobiledeviceGatewayError(.serviceError, reason: "键“\(key)”的 Lockdown 值缺失或无效")
                 }
                 return val
             }
@@ -439,7 +439,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
             let err = lockdownd_get_value(client, nil, key, &valNode)
             guard err == LOCKDOWN_E_SUCCESS, let valNode = valNode else {
                 debugLog("[LibimobiledeviceGateway] syncGetLockdownValue(\(key)) lockdownd_get_value failed with code \(err.rawValue)")
-                throw LibimobiledeviceGatewayError(.serviceError, reason: "Failed to get lockdown value for key '\(key)': code \(err.rawValue)")
+                throw LibimobiledeviceGatewayError(.serviceError, reason: "获取键“\(key)”的 Lockdown 值失败：代码 \(err.rawValue)")
             }
             defer { plist_free(valNode) }
 
@@ -447,7 +447,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
             plist_get_string_val(valNode, &valPtr)
             guard let valPtr = valPtr else {
                 debugLog("[LibimobiledeviceGateway] syncGetLockdownValue(\(key)) plist string pointer is nil")
-                throw LibimobiledeviceGatewayError(.serviceError, reason: "Lockdown value for key '\(key)' could not be decoded as string")
+                throw LibimobiledeviceGatewayError(.serviceError, reason: "键“\(key)”的 Lockdown 值无法解码为字符串")
             }
             let val = String(cString: valPtr)
             free(valPtr)
@@ -488,19 +488,19 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
                 try rsdSendPlist(stream, dict: ["Command": "ReceiveBytes", "ImageSize": image.count, "ImageType": "Developer"])
                 let resp1 = try rsdRecvPlist(stream)
                 if (resp1["Status"] as? String) != "ReceiveBytesAck" {
-                    throw LibimobiledeviceGatewayError(.serviceError, reason: "ReceiveBytes not acknowledged")
+                    throw LibimobiledeviceGatewayError(.serviceError, reason: "ReceiveBytes 未收到确认")
                 }
                 try image.withUnsafeBytes { rawBuf in
                     if let ptr = rawBuf.baseAddress?.assumingMemoryBound(to: UInt8.self) {
                         let err = rppairing_service_stream_send_raw(stream, ptr, image.count)
                         if err != RPPAIRING_E_SUCCESS {
-                            throw LibimobiledeviceGatewayError(.serviceError, reason: "Streaming DDI image failed: code \(err.rawValue)")
+                            throw LibimobiledeviceGatewayError(.serviceError, reason: "流式传输 DDI 映像失败：代码 \(err.rawValue)")
                         }
                     }
                 }
                 let resp2 = try rsdRecvPlist(stream)
                 if (resp2["Status"] as? String) != "Complete" {
-                    throw LibimobiledeviceGatewayError(.serviceError, reason: "Image upload did not complete: \(resp2)")
+                    throw LibimobiledeviceGatewayError(.serviceError, reason: "映像上传未完成：\(resp2)")
                 }
                 try rsdSendPlist(stream, dict: [
                     "Command": "MountImage",
@@ -509,7 +509,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
                 ])
                 let resp3 = try rsdRecvPlist(stream, timeoutMs: 30000)
                 if (resp3["Status"] as? String) != "Complete" {
-                    throw LibimobiledeviceGatewayError(.serviceError, reason: "MountImage failed: \(resp3["Error"] ?? "Unknown error")")
+                    throw LibimobiledeviceGatewayError(.serviceError, reason: "MountImage 失败：\(resp3["Error"] ?? "未知错误")")
                 }
             }
             return
@@ -522,7 +522,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
         ) { mounter in
             try signature.withUnsafeBytes { sigBuf in
                 guard let sigPtr = sigBuf.baseAddress?.assumingMemoryBound(to: UInt8.self) else {
-                    throw LibimobiledeviceGatewayError(.serviceError, reason: "Invalid signature buffer")
+                    throw LibimobiledeviceGatewayError(.serviceError, reason: "签名数据缓冲区无效")
                 }
                 var resultPlist: plist_t? = nil
                 let res = mobile_image_mounter_mount_image(
@@ -537,7 +537,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
                     plist_free(resultPlist)
                 }
                 if res != MOBILE_IMAGE_MOUNTER_E_SUCCESS {
-                    throw LibimobiledeviceGatewayError(.serviceError, reason: "mobile_image_mounter_mount_image failed with code \(res.rawValue)")
+                    throw LibimobiledeviceGatewayError(.serviceError, reason: "mobile_image_mounter_mount_image 调用失败，代码 \(res.rawValue)")
                 }
             }
         }
@@ -550,7 +550,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
                 try rsdSendPlist(stream, dict: ["Command": "ReceiveBytes", "ImageSize": image.count, "ImageType": "Personalized"])
                 let resp1 = try rsdRecvPlist(stream)
                 if (resp1["Status"] as? String) != "ReceiveBytesAck" {
-                    throw LibimobiledeviceGatewayError(.serviceError, reason: "ReceiveBytes not acknowledged by device: \(resp1)")
+                    throw LibimobiledeviceGatewayError(.serviceError, reason: "设备未确认 ReceiveBytes：\(resp1)")
                 }
 
                 debugLog("[LibimobiledeviceGateway] Streaming DDI image bytes...")
@@ -558,14 +558,14 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
                     if let ptr = rawBuf.baseAddress?.assumingMemoryBound(to: UInt8.self) {
                         let err = rppairing_service_stream_send_raw(stream, ptr, image.count)
                         if err != RPPAIRING_E_SUCCESS {
-                            throw LibimobiledeviceGatewayError(.serviceError, reason: "Streaming DDI image failed: code \(err.rawValue)")
+                            throw LibimobiledeviceGatewayError(.serviceError, reason: "流式传输 DDI 映像失败：代码 \(err.rawValue)")
                         }
                     }
                 }
 
                 let resp2 = try rsdRecvPlist(stream)
                 if (resp2["Status"] as? String) != "Complete" {
-                    throw LibimobiledeviceGatewayError(.serviceError, reason: "Image upload did not complete: \(resp2)")
+                    throw LibimobiledeviceGatewayError(.serviceError, reason: "映像上传未完成：\(resp2)")
                 }
 
                 debugLog("[LibimobiledeviceGateway] Mounting Personalized DDI...")
@@ -577,7 +577,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
                 ])
                 let resp3 = try rsdRecvPlist(stream, timeoutMs: 30000)
                 if (resp3["Status"] as? String) != "Complete" {
-                    throw LibimobiledeviceGatewayError(.serviceError, reason: "MountImage failed: \(resp3["Error"] ?? "Unknown error")")
+                    throw LibimobiledeviceGatewayError(.serviceError, reason: "MountImage 失败：\(resp3["Error"] ?? "未知错误")")
                 }
                 debugLog("[LibimobiledeviceGateway] Personalized DDI mounted successfully via RSD!")
             }
@@ -625,7 +625,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
             plist_free(resultPlist)
         }
         if res != MOBILE_IMAGE_MOUNTER_E_SUCCESS {
-            throw LibimobiledeviceGatewayError(.serviceError, reason: "mobile_image_mounter_mount_image_with_options failed with code \(res.rawValue)")
+            throw LibimobiledeviceGatewayError(.serviceError, reason: "mobile_image_mounter_mount_image_with_options 调用失败，代码 \(res.rawValue)")
         }
     }
 
@@ -636,7 +636,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
                 try rsdSendPlist(stream, dict: ["MessageType": "Install", "Profile": profile])
                 let resp = try rsdRecvPlist(stream)
                 if let status = resp["Status"] as? Int, status != 0 {
-                    throw LibimobiledeviceGatewayError(.serviceError, reason: "misagent install failed with status: \(status)")
+                    throw LibimobiledeviceGatewayError(.serviceError, reason: "misagent 安装失败，状态：\(status)")
                 }
                 debugLog("[LibimobiledeviceGateway] Provisioning profile installed successfully via RSD!")
             }
@@ -650,14 +650,14 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
         ) { misagent in
             try profile.withUnsafeBytes { profBuf in
                 guard let profPtr = profBuf.baseAddress?.assumingMemoryBound(to: CChar.self) else {
-                    throw LibimobiledeviceGatewayError(.serviceError, reason: "Invalid profile buffer")
+                    throw LibimobiledeviceGatewayError(.serviceError, reason: "描述文件缓冲区无效")
                 }
                 let plistProfile = plist_new_data(profPtr, UInt64(profile.count))
                 defer { if let p = plistProfile { plist_free(p) } }
 
                 let res = misagent_install(misagent, plistProfile)
                 if res != MISAGENT_E_SUCCESS {
-                    throw LibimobiledeviceGatewayError(.serviceError, reason: "misagent_install failed with code \(res.rawValue)")
+                    throw LibimobiledeviceGatewayError(.serviceError, reason: "misagent_install 调用失败，代码 \(res.rawValue)")
                 }
             }
         }
@@ -669,7 +669,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
                 try rsdSendPlist(stream, dict: ["MessageType": "Remove", "ProfileID": id])
                 let resp = try rsdRecvPlist(stream)
                 if let status = resp["Status"] as? Int, status != 0 {
-                    throw LibimobiledeviceGatewayError(.serviceError, reason: "misagent remove failed with status: \(status)")
+                    throw LibimobiledeviceGatewayError(.serviceError, reason: "misagent 移除失败，状态：\(status)")
                 }
             }
             return
@@ -682,7 +682,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
         ) { misagent in
             let res = misagent_remove(misagent, id)
             if res != MISAGENT_E_SUCCESS {
-                throw LibimobiledeviceGatewayError(.serviceError, reason: "misagent_remove failed with code \(res.rawValue)")
+                throw LibimobiledeviceGatewayError(.serviceError, reason: "misagent_remove 调用失败，代码 \(res.rawValue)")
             }
         }
     }
@@ -714,7 +714,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
             var profilesPlist: plist_t? = nil
             let res = misagent_copy_all(misagent, &profilesPlist)
             if res != MISAGENT_E_SUCCESS {
-                throw LibimobiledeviceGatewayError(.serviceError, reason: "misagent_copy_all failed with code \(res.rawValue)")
+                throw LibimobiledeviceGatewayError(.serviceError, reason: "misagent_copy_all 调用失败，代码 \(res.rawValue)")
             }
             defer { if let p = profilesPlist { plist_free(p) } }
 
@@ -749,7 +749,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
         ) { instproxy in
             let res = instproxy_uninstall(instproxy, bundleId, nil, nil, nil)
             if res != INSTPROXY_E_SUCCESS {
-                throw LibimobiledeviceGatewayError(.serviceError, reason: "instproxy_uninstall failed with code \(res.rawValue)")
+                throw LibimobiledeviceGatewayError(.serviceError, reason: "instproxy_uninstall 调用失败，代码 \(res.rawValue)")
             }
         }
     }
@@ -781,7 +781,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
             if let ptr = raw.baseAddress?.assumingMemoryBound(to: UInt8.self) {
                 let err = rppairing_service_stream_send_raw(stream, ptr, fullPacket.count)
                 if err != RPPAIRING_E_SUCCESS {
-                    throw LibimobiledeviceGatewayError(.serviceError, reason: "AFC send packet failed: code \(err.rawValue)")
+                    throw LibimobiledeviceGatewayError(.serviceError, reason: "AFC 发送数据包失败：代码 \(err.rawValue)")
                 }
             }
         }
@@ -794,7 +794,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
         var hdrBuf = [UInt8](repeating: 0, count: 40)
         let hdrErr = rppairing_service_stream_recv_exact(stream, &hdrBuf, 40, timeoutMs)
         guard hdrErr == RPPAIRING_E_SUCCESS else {
-            throw LibimobiledeviceGatewayError(.serviceError, reason: "AFC recv header failed: code \(hdrErr.rawValue)")
+            throw LibimobiledeviceGatewayError(.serviceError, reason: "AFC 接收头部失败：代码 \(hdrErr.rawValue)")
         }
 
         let entireLen = hdrBuf.withUnsafeBytes { $0.load(fromByteOffset: 8, as: UInt64.self) }.littleEndian
@@ -807,7 +807,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
             var buf = [UInt8](repeating: 0, count: headerPayloadSize)
             let err = rppairing_service_stream_recv_exact(stream, &buf, headerPayloadSize, timeoutMs)
             guard err == RPPAIRING_E_SUCCESS else {
-                throw LibimobiledeviceGatewayError(.serviceError, reason: "AFC recv header payload failed: code \(err.rawValue)")
+                throw LibimobiledeviceGatewayError(.serviceError, reason: "AFC 接收头部负载失败：代码 \(err.rawValue)")
             }
             headerPayload = Data(buf)
         }
@@ -818,7 +818,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
             var buf = [UInt8](repeating: 0, count: payloadSize)
             let err = rppairing_service_stream_recv_exact(stream, &buf, payloadSize, timeoutMs)
             guard err == RPPAIRING_E_SUCCESS else {
-                throw LibimobiledeviceGatewayError(.serviceError, reason: "AFC recv payload failed: code \(err.rawValue)")
+                throw LibimobiledeviceGatewayError(.serviceError, reason: "AFC 接收负载失败：代码 \(err.rawValue)")
             }
             payload = Data(buf)
         }
@@ -841,11 +841,11 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
         try rsdAfcSendPacket(stream, opcode: 13 /* FileOpen */, headerPayload: openPayload, packetNum: &packetNum)
         let resp = try rsdAfcRecvResponse(stream)
         guard resp.headerPayload.count >= 8 else {
-            throw LibimobiledeviceGatewayError(.serviceError, reason: "AFC FileOpen response invalid for \(path)")
+            throw LibimobiledeviceGatewayError(.serviceError, reason: "\(path) 的 AFC FileOpen 响应无效")
         }
         let fd = resp.headerPayload.withUnsafeBytes { $0.load(as: UInt64.self) }.littleEndian
         guard fd != 0 else {
-            throw LibimobiledeviceGatewayError(.serviceError, reason: "AFC FileOpen returned fd 0 for \(path)")
+            throw LibimobiledeviceGatewayError(.serviceError, reason: "\(path) 的 AFC FileOpen 返回了文件描述符 0")
         }
         return fd
     }
@@ -884,7 +884,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
                     if writeResp.opcode == 1 /* Status */ && writeResp.headerPayload.count >= 8 {
                         let status = writeResp.headerPayload.withUnsafeBytes { $0.load(as: UInt64.self) }.littleEndian
                         if status != 0 {
-                            throw LibimobiledeviceGatewayError(.serviceError, reason: "AFC Write failed with status \(status)")
+                            throw LibimobiledeviceGatewayError(.serviceError, reason: "AFC 写入失败，状态 \(status)")
                         }
                     }
                     offset = end
@@ -906,18 +906,18 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
             var handle: UInt64 = 0
             let openRes = afc_file_open(afc, remotePath, AFC_FOPEN_RW, &handle)
             guard openRes == AFC_E_SUCCESS, handle != 0 else {
-                throw LibimobiledeviceGatewayError(.serviceError, reason: "afc_file_open failed with code \(openRes.rawValue)")
+                throw LibimobiledeviceGatewayError(.serviceError, reason: "afc_file_open 调用失败，代码 \(openRes.rawValue)")
             }
             defer { _ = afc_file_close(afc, handle) }
 
             try ipaBytes.withUnsafeBytes { rawBuf in
                 guard let baseAddr = rawBuf.baseAddress?.assumingMemoryBound(to: CChar.self) else {
-                    throw LibimobiledeviceGatewayError(.serviceError, reason: "Invalid IPA buffer")
+                    throw LibimobiledeviceGatewayError(.serviceError, reason: "IPA 缓冲区无效")
                 }
                 var bytesWritten: UInt32 = 0
                 let writeRes = afc_file_write(afc, handle, baseAddr, UInt32(ipaBytes.count), &bytesWritten)
                 if writeRes != AFC_E_SUCCESS {
-                    throw LibimobiledeviceGatewayError(.serviceError, reason: "afc_file_write failed with code \(writeRes.rawValue)")
+                    throw LibimobiledeviceGatewayError(.serviceError, reason: "afc_file_write 调用失败，代码 \(writeRes.rawValue)")
                 }
             }
         }
@@ -946,7 +946,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
                         }
                     }
                     if let err = resp["Error"] as? String {
-                        throw LibimobiledeviceGatewayError(.serviceError, reason: "Installation failed: \(err)")
+                        throw LibimobiledeviceGatewayError(.serviceError, reason: "安装失败：\(err)")
                     }
                 }
             }
@@ -961,7 +961,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
             let remotePath = "PublicStaging/\(bundleId).ipa"
             let res = instproxy_install(instproxy, remotePath, nil, nil, nil)
             if res != INSTPROXY_E_SUCCESS {
-                throw LibimobiledeviceGatewayError(.serviceError, reason: "instproxy_install failed with code \(res.rawValue)")
+                throw LibimobiledeviceGatewayError(.serviceError, reason: "instproxy_install 调用失败，代码 \(res.rawValue)")
             }
         }
     }
@@ -986,7 +986,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
                     includingPropertiesForKeys: [.isDirectoryKey],
                     options: []
                 ) else {
-                    throw LibimobiledeviceGatewayError(.serviceError, reason: "Failed to enumerate \(appURL.path)")
+                    throw LibimobiledeviceGatewayError(.serviceError, reason: "枚举 \(appURL.path) 失败")
                 }
 
                 for case let fileURL as URL in enumerator {
@@ -1015,7 +1015,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
                             if writeResp.opcode == 1 && writeResp.headerPayload.count >= 8 {
                                 let status = writeResp.headerPayload.withUnsafeBytes { $0.load(as: UInt64.self) }.littleEndian
                                 if status != 0 {
-                                    throw LibimobiledeviceGatewayError(.serviceError, reason: "AFC Write failed with status \(status) for \(remoteItemPath)")
+                                    throw LibimobiledeviceGatewayError(.serviceError, reason: "AFC 写入失败，状态 \(status)，路径 \(remoteItemPath)")
                                 }
                             }
                             offset = end
@@ -1042,7 +1042,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
                 includingPropertiesForKeys: [.isDirectoryKey],
                 options: []
             ) else {
-                throw LibimobiledeviceGatewayError(.serviceError, reason: "Failed to enumerate \(appURL.path)")
+                throw LibimobiledeviceGatewayError(.serviceError, reason: "枚举 \(appURL.path) 失败")
             }
 
             for case let fileURL as URL in enumerator {
@@ -1058,7 +1058,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
                     var handle: UInt64 = 0
                     let openRes = afc_file_open(afc, remoteItemPath, AFC_FOPEN_RW, &handle)
                     guard openRes == AFC_E_SUCCESS, handle != 0 else {
-                        throw LibimobiledeviceGatewayError(.serviceError, reason: "afc_file_open failed for \(remoteItemPath) with code \(openRes.rawValue)")
+                        throw LibimobiledeviceGatewayError(.serviceError, reason: "afc_file_open 打开 \(remoteItemPath) 失败，代码 \(openRes.rawValue)")
                     }
                     defer { _ = afc_file_close(afc, handle) }
 
@@ -1066,12 +1066,12 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
                     if !data.isEmpty {
                         try data.withUnsafeBytes { rawBuf in
                             guard let baseAddr = rawBuf.baseAddress?.assumingMemoryBound(to: CChar.self) else {
-                                throw LibimobiledeviceGatewayError(.serviceError, reason: "Invalid file buffer")
+                                throw LibimobiledeviceGatewayError(.serviceError, reason: "文件缓冲区无效")
                             }
                             var bytesWritten: UInt32 = 0
                             let writeRes = afc_file_write(afc, handle, baseAddr, UInt32(data.count), &bytesWritten)
                             if writeRes != AFC_E_SUCCESS {
-                                throw LibimobiledeviceGatewayError(.serviceError, reason: "afc_file_write failed for \(remoteItemPath) with code \(writeRes.rawValue)")
+                                throw LibimobiledeviceGatewayError(.serviceError, reason: "afc_file_write 写入 \(remoteItemPath) 失败，代码 \(writeRes.rawValue)")
                             }
                         }
                     }
@@ -1104,7 +1104,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
                         }
                     }
                     if let err = resp["Error"] as? String {
-                        throw LibimobiledeviceGatewayError(.serviceError, reason: "Installation failed: \(err)")
+                        throw LibimobiledeviceGatewayError(.serviceError, reason: "安装失败：\(err)")
                     }
                 }
             }
@@ -1122,7 +1122,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
 
             let res = instproxy_install(instproxy, remotePath, clientOptions, nil, nil)
             if res != INSTPROXY_E_SUCCESS {
-                throw LibimobiledeviceGatewayError(.serviceError, reason: "instproxy_install failed with code \(res.rawValue)")
+                throw LibimobiledeviceGatewayError(.serviceError, reason: "instproxy_install 调用失败，代码 \(res.rawValue)")
             }
         }
     }
@@ -1146,7 +1146,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
         ) { ha in
             let res = house_arrest_send_command(ha, "VendContainer", identifier)
             if res != HOUSE_ARREST_E_SUCCESS {
-                throw LibimobiledeviceGatewayError(.serviceError, reason: "house_arrest_send_command failed with code \(res.rawValue)")
+                throw LibimobiledeviceGatewayError(.serviceError, reason: "house_arrest_send_command 调用失败，代码 \(res.rawValue)")
             }
             var resultDict: plist_t? = nil
             let gRes = house_arrest_get_result(ha, &resultDict)
@@ -1154,7 +1154,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
                 plist_free(resultDict)
             }
             if gRes != HOUSE_ARREST_E_SUCCESS {
-                throw LibimobiledeviceGatewayError(.serviceError, reason: "house_arrest_get_result failed with code \(gRes.rawValue)")
+                throw LibimobiledeviceGatewayError(.serviceError, reason: "house_arrest_get_result 调用失败，代码 \(gRes.rawValue)")
             }
         }
     }
@@ -1176,14 +1176,14 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
             }
         }
         guard newErr == DEBUGSERVER_E_SUCCESS, let cmd = command else {
-            throw LibimobiledeviceGatewayError(.serviceError, reason: "debugserver_command_new failed with code \(newErr.rawValue)")
+            throw LibimobiledeviceGatewayError(.serviceError, reason: "debugserver_command_new 调用失败，代码 \(newErr.rawValue)")
         }
         defer { debugserver_command_free(cmd) }
 
         var response: UnsafeMutablePointer<CChar>? = nil
         let sendErr = debugserver_client_send_command(client, cmd, &response, nil)
         guard sendErr == DEBUGSERVER_E_SUCCESS else {
-            throw LibimobiledeviceGatewayError(.serviceError, reason: "debugserver_client_send_command failed with code \(sendErr.rawValue)")
+            throw LibimobiledeviceGatewayError(.serviceError, reason: "debugserver_client_send_command 调用失败，代码 \(sendErr.rawValue)")
         }
         if let response = response {
             let respStr = String(cString: response)
@@ -1214,7 +1214,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
             ) else {
                 throw LibimobiledeviceGatewayError(
                     .serviceError,
-                    reason: "App '\(appId)' is not running. Please open the app and keep it in the background, then enable JIT."
+                    reason: "应用“\(appId)”未在运行。请先打开该应用并保持其在后台，然后再启用 JIT。"
                 )
             }
             if pid > 0 {
@@ -1275,7 +1275,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
 
             let sRes = heartbeat_send(hb, plist)
             if sRes != HEARTBEAT_E_SUCCESS {
-                throw LibimobiledeviceGatewayError(.serviceError, reason: "heartbeat_send failed with code \(sRes.rawValue)")
+                throw LibimobiledeviceGatewayError(.serviceError, reason: "heartbeat_send 调用失败，代码 \(sRes.rawValue)")
             }
 
             var respPlist: plist_t? = nil
@@ -1290,7 +1290,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
                 }
             }
             if rRes != HEARTBEAT_E_SUCCESS {
-                throw LibimobiledeviceGatewayError(.serviceError, reason: "heartbeat_receive_with_timeout failed with code \(rRes.rawValue)")
+                throw LibimobiledeviceGatewayError(.serviceError, reason: "heartbeat_receive_with_timeout 调用失败，代码 \(rRes.rawValue)")
             }
             newInterval = interval
         }
@@ -1305,7 +1305,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
             var dirList: UnsafeMutablePointer<UnsafeMutablePointer<CChar>?>? = nil
             let res = afc_read_directory(afc, path, &dirList)
             if res != AFC_E_SUCCESS {
-                throw LibimobiledeviceGatewayError(.serviceError, reason: "afc_read_directory failed with code \(res.rawValue)")
+                throw LibimobiledeviceGatewayError(.serviceError, reason: "afc_read_directory 调用失败，代码 \(res.rawValue)")
             }
             defer {
                 if let dirList = dirList {
@@ -1334,7 +1334,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
             var handle: UInt64 = 0
             let openRes = afc_file_open(afc, path, AFC_FOPEN_RDONLY, &handle)
             guard openRes == AFC_E_SUCCESS, handle != 0 else {
-                throw LibimobiledeviceGatewayError(.serviceError, reason: "afc_file_open failed with code \(openRes.rawValue)")
+                throw LibimobiledeviceGatewayError(.serviceError, reason: "afc_file_open 调用失败，代码 \(openRes.rawValue)")
             }
             defer { _ = afc_file_close(afc, handle) }
 
@@ -1349,7 +1349,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
                     return afc_file_read(afc, handle, ptr, chunkSize, &bytesRead)
                 }
                 if readRes != AFC_E_SUCCESS {
-                    throw LibimobiledeviceGatewayError(.serviceError, reason: "afc_file_read failed with code \(readRes.rawValue)")
+                    throw LibimobiledeviceGatewayError(.serviceError, reason: "afc_file_read 调用失败，代码 \(readRes.rawValue)")
                 }
                 if bytesRead == 0 { break }
                 buffer.append(temp, count: Int(bytesRead))
@@ -1367,7 +1367,7 @@ public final class LibimobiledeviceGateway: BaseDeviceGateway, DeviceGatewayAPI,
             var infoList: UnsafeMutablePointer<UnsafeMutablePointer<CChar>?>? = nil
             let res = afc_get_file_info(afc, path, &infoList)
             if res != AFC_E_SUCCESS {
-                throw LibimobiledeviceGatewayError(.serviceError, reason: "afc_get_file_info failed with code \(res.rawValue)")
+                throw LibimobiledeviceGatewayError(.serviceError, reason: "afc_get_file_info 调用失败，代码 \(res.rawValue)")
             }
             defer {
                 if let infoList = infoList {
@@ -1510,7 +1510,7 @@ extension LibimobiledeviceGateway {
         onReady: @escaping @Sendable (String, UInt16, [String: String]) -> Void,
         onPin: @escaping @Sendable (String) -> Void
     ) async throws -> PairedDeviceRecord {
-        throw LibimobiledeviceGatewayError(.unsupportedOperation, reason: "startWirelessPair (RemotePairing is not supported on pure Lockdown gateway)")
+        throw LibimobiledeviceGatewayError(.unsupportedOperation, reason: "startWirelessPair（纯 Lockdown 网关不支持 RemotePairing）")
     }
 
     public func triggerWirelessPair(
@@ -1522,7 +1522,7 @@ extension LibimobiledeviceGateway {
         resolveFileName: (@Sendable (String, String) -> String)?,
         onRequestPin: @escaping @Sendable (@escaping @Sendable (String) -> Void) -> Void
     ) async throws -> PairedDeviceRecord {
-        throw LibimobiledeviceGatewayError(.unsupportedOperation, reason: "triggerWirelessPair (RemotePairing is not supported on pure Lockdown gateway)")
+        throw LibimobiledeviceGatewayError(.unsupportedOperation, reason: "triggerWirelessPair（纯 Lockdown 网关不支持 RemotePairing）")
     }
 
     public func afcListDirectory(bundleId: String, path: String) async throws -> [String] {

@@ -97,7 +97,7 @@ public struct LockdownPairingFile: PairingFile {
 public enum PairingFileParser {
     public static func validatePairingFile(from plist: [String: any Sendable]?, preferred: PairingProtocol? = nil) throws -> PairingProtocol {
         guard let plist = plist else {
-            throw PairingError.invalidPlist("The file could not be parsed as a property list (plist).")
+            throw PairingError.invalidPlist("该文件无法解析为属性列表（plist）。")
         }
 
         if let preferred = preferred {
@@ -115,7 +115,7 @@ public enum PairingFileParser {
                     }
                     return .lockdown
                 case .unknown:
-                    throw PairingError.invalidPlist("Unknown pairing protocol specified")
+                    throw PairingError.invalidPlist("指定了未知的配对协议")
             }
         }
 
@@ -126,7 +126,7 @@ public enum PairingFileParser {
         let hasLockdown = missingLockdown.isEmpty
 
         if hasRemoteRP && hasLockdown {
-            throw PairingError.ambiguous("The pairing file contains credentials for both Remote Pairing and Lockdown protocols. Specify a preferred protocol to resolve ambiguity.")
+            throw PairingError.ambiguous("该配对文件同时包含远程配对（Remote Pairing）与 Lockdown 协议的凭据。请指定首选协议以消除歧义。")
         }
 
         if hasRemoteRP {
@@ -138,18 +138,18 @@ public enum PairingFileParser {
         }
 
         throw PairingError.invalidPlist(
-            "Unrecognized pairing file format. " +
-            "  • Missing .\(PairingProtocol.rppairing) attributes: \(missingRemoteRP); " +
-            "  • Missing .\(PairingProtocol.lockdown)  attributes: \(missingLockdown)."
+            "无法识别的配对文件格式。" +
+            "  • 缺少 .\(PairingProtocol.rppairing) 属性：\(missingRemoteRP)；" +
+            "  • 缺少 .\(PairingProtocol.lockdown)  属性：\(missingLockdown)。"
         )
     }
 
     public static func parse(content: String, preferred: PairingProtocol? = nil) throws -> any PairingFile {
         guard let data = content.data(using: .utf8) else {
-            throw PairingError.unreadable("UTF-8 encoding failed")
+            throw PairingError.unreadable("UTF-8 编码失败")
         }
         guard let rawPlist = try? PropertyListSerialization.propertyList(from: data, options: [], format: nil) as? [String: Any] else {
-            throw PairingError.invalidPlist("PropertyListSerialization failed")
+            throw PairingError.invalidPlist("属性列表序列化失败")
         }
         let plist = ConcurrencyUtils.toSendableDictionary(rawPlist)
         let mode = try validatePairingFile(from: plist, preferred: preferred)
@@ -159,7 +159,7 @@ public enum PairingFileParser {
             case .lockdown:
                 return try LockdownPairingFile(content: content, plist: plist, data: data)
             case .unknown:
-                throw PairingError.invalidPlist("Unknown pairing file format")
+                throw PairingError.invalidPlist("未知的配对文件格式")
         }
     }
 }

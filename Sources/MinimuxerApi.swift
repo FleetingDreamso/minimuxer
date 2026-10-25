@@ -311,18 +311,18 @@ public extension EMProxyAPI {
 }
 
 public enum LocalInterfaceType: String, Hashable, Sendable, CaseIterable, Comparable {
-    case vpnUtun        = "VPN (uTun)"
-    case vpnIpsec       = "VPN (IPSec)"
+    case vpnUtun        = "VPN（uTun）"
+    case vpnIpsec       = "VPN（IPSec）"
     case wifi           = "Wi-Fi"
-    case usbLinkLocal   = "USB / Link-Local"
-    case ethernet       = "Ethernet / Adapter"
-    case cellular       = "Cellular"
-    case airdrop        = "AirDrop (AWDL)"
-    case lowLatencyWLAN = "Low-Latency WLAN"
-    case hotspotBridge  = "Personal Hotspot / Bridge"
-    case loopback       = "Loopback"
-    case packetCapture  = "Packet Capture"
-    case other          = "Other"
+    case usbLinkLocal   = "USB / 链路本地"
+    case ethernet       = "以太网 / 适配器"
+    case cellular       = "蜂窝网络"
+    case airdrop        = "AirDrop（AWDL）"
+    case lowLatencyWLAN = "低延迟 WLAN"
+    case hotspotBridge  = "个人热点 / 网桥"
+    case loopback       = "回环"
+    case packetCapture  = "抓包"
+    case other          = "其它"
 
     private static let priorityOrder: [LocalInterfaceType] = [
         .wifi,
