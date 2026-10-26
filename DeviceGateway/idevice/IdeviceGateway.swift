@@ -380,12 +380,12 @@ public final class IdeviceGateway: BaseDeviceGateway, DeviceGatewayAPI, @uncheck
                 invalidateConnection()
                 
                 if isPairingError(secondErr) {
-                    let reason = "服务连接失败，错误：(\(retryMsg.isEmpty ? "未知 FFI 错误" : retryMsg))"
+                    let reason = "服务连接失败，错误：（\(retryMsg.isEmpty ? "未知 FFI 错误" : retryMsg)）"
                     let error = IdeviceGatewayError(.invalidPairingFile, reason: reason)
                     lastError = error
                     throw error
                 } else {
-                    let error = IdeviceGatewayError(.serviceError, reason: "连接 \(serviceName) 失败，错误：(\(retryMsg.isEmpty ? "未知 FFI 错误" : retryMsg))")
+                    let error = IdeviceGatewayError(.serviceError, reason: "连接 \(serviceName) 失败，错误：（\(retryMsg.isEmpty ? "未知 FFI 错误" : retryMsg)）")
                     lastError = error
                     throw error
                 }
@@ -533,7 +533,7 @@ public final class IdeviceGateway: BaseDeviceGateway, DeviceGatewayAPI, @uncheck
             let msg = self.getErrorMessage(from: connectErr)
             debugLog("[IdeviceGateway] performWithUsbmuxdService(\(serviceName)) connect failed: code=\(connectErr.pointee.code), message=\(msg)")
             defer { idevice_error_free(connectErr) }
-            throw IdeviceGatewayError(.serviceError, reason: "连接 \(serviceName) 失败，错误：(\(msg))")
+            throw IdeviceGatewayError(.serviceError, reason: "连接 \(serviceName) 失败，错误：（\(msg)）")
         }
         guard let client = client else {
             debugLog("[IdeviceGateway] performWithUsbmuxdService(\(serviceName)) client is nil")
@@ -611,7 +611,7 @@ public final class IdeviceGateway: BaseDeviceGateway, DeviceGatewayAPI, @uncheck
             let msg = self.getErrorMessage(from: connectErr)
             debugLog("[IdeviceGateway] error: \(serviceName) connect failed: code=\(connectErr.pointee.code), message=\(msg)")
             defer { safeFreeError(connectErr) }
-            throw IdeviceGatewayError(.serviceError, reason: "连接 \(serviceName) 失败，错误：(\(msg))")
+            throw IdeviceGatewayError(.serviceError, reason: "连接 \(serviceName) 失败，错误：（\(msg)）")
         }
         guard let client = client else {
             throw IdeviceGatewayError(.noConnection)
@@ -694,9 +694,9 @@ public final class IdeviceGateway: BaseDeviceGateway, DeviceGatewayAPI, @uncheck
                 debugLog("[IdeviceGateway] getLockdownValue lockdownd_get_value failed for \(key): \(msg)")
                 defer { safeFreeError(valErr) }
                 if self.isPairingError(valErr) {
-                    throw IdeviceGatewayError(.invalidPairingFile, reason: "获取键 \(key) 的 Lockdown 值失败，错误：(\(msg))")
+                    throw IdeviceGatewayError(.invalidPairingFile, reason: "获取键 \(key) 的 Lockdown 值失败，错误：（\(msg)）")
                 } else {
-                    throw IdeviceGatewayError(.serviceError, reason: "获取键 \(key) 的 Lockdown 值失败，错误：(\(msg))")
+                    throw IdeviceGatewayError(.serviceError, reason: "获取键 \(key) 的 Lockdown 值失败，错误：（\(msg)）")
                 }
             }
             guard let plistVal = plistVal else {
@@ -732,7 +732,7 @@ public final class IdeviceGateway: BaseDeviceGateway, DeviceGatewayAPI, @uncheck
                         let msg = self.getErrorMessage(from: installErr)
                         debugLog("[IdeviceGateway] installProvisioningProfile() misagent_install failed: \(msg)")
                         defer { safeFreeError(installErr) }
-                        throw IdeviceGatewayError(.serviceError, reason: "安装描述文件失败，错误：(\(msg))")
+                        throw IdeviceGatewayError(.serviceError, reason: "安装描述文件失败，错误：（\(msg)）")
                     }
                     debugLog("[IdeviceGateway] installProvisioningProfile() misagent_install succeeded")
                 }
@@ -756,7 +756,7 @@ public final class IdeviceGateway: BaseDeviceGateway, DeviceGatewayAPI, @uncheck
                     let msg = self.getErrorMessage(from: removeErr)
                     debugLog("[IdeviceGateway] removeProvisioningProfile() misagent_remove failed: \(msg)")
                     defer { safeFreeError(removeErr) }
-                    throw IdeviceGatewayError(.serviceError, reason: "移除描述文件失败，错误：(\(msg))")
+                    throw IdeviceGatewayError(.serviceError, reason: "移除描述文件失败，错误：（\(msg)）")
                 }
                 debugLog("[IdeviceGateway] removeProvisioningProfile() misagent_remove succeeded")
             }
@@ -779,7 +779,7 @@ public final class IdeviceGateway: BaseDeviceGateway, DeviceGatewayAPI, @uncheck
                     let msg = self.getErrorMessage(from: uninstallErr)
                     debugLog("[IdeviceGateway] removeApp() installation_proxy_uninstall failed: \(msg)")
                     defer { idevice_error_free(uninstallErr) }
-                    throw IdeviceGatewayError(.serviceError, reason: "卸载应用失败，错误：(\(msg))")
+                    throw IdeviceGatewayError(.serviceError, reason: "卸载应用失败，错误：（\(msg)）")
                 }
                 debugLog("[IdeviceGateway] removeApp() installation_proxy_uninstall succeeded")
             }
@@ -817,7 +817,7 @@ public final class IdeviceGateway: BaseDeviceGateway, DeviceGatewayAPI, @uncheck
                 let msg = self.getErrorMessage(from: openErr)
                 debugLog("[IdeviceGateway] sendIpaAfc() afc_file_open failed: \(msg)")
                 defer { idevice_error_free(openErr) }
-                throw IdeviceGatewayError(.serviceError, reason: "打开远程 AFC 文件失败，错误：(\(msg))")
+                throw IdeviceGatewayError(.serviceError, reason: "打开远程 AFC 文件失败，错误：（\(msg)）")
             }
             defer {
                 verboseLog("[IdeviceGateway] sendIpaAfc() closing remote file handle")
@@ -832,7 +832,7 @@ public final class IdeviceGateway: BaseDeviceGateway, DeviceGatewayAPI, @uncheck
                         let msg = self.getErrorMessage(from: writeErr)
                         debugLog("[IdeviceGateway] sendIpaAfc() afc_file_write failed: \(msg)")
                         defer { idevice_error_free(writeErr) }
-                        throw IdeviceGatewayError(.serviceError, reason: "写入 AFC 文件失败，错误：(\(msg))")
+                        throw IdeviceGatewayError(.serviceError, reason: "写入 AFC 文件失败，错误：（\(msg)）")
                     }
                     debugLog("[IdeviceGateway] sendIpaAfc() afc_file_write succeeded")
                 }
@@ -857,7 +857,7 @@ public final class IdeviceGateway: BaseDeviceGateway, DeviceGatewayAPI, @uncheck
                     let msg = self.getErrorMessage(from: installErr)
                     debugLog("[IdeviceGateway] installIpa() installation_proxy_install failed: \(msg)")
                     defer { idevice_error_free(installErr) }
-                    throw IdeviceGatewayError(.serviceError, reason: "安装 IPA 失败，错误：(\(msg))")
+                    throw IdeviceGatewayError(.serviceError, reason: "安装 IPA 失败，错误：（\(msg)）")
                 }
                 debugLog("[IdeviceGateway] installIpa() installation_proxy_install succeeded")
             }
@@ -965,7 +965,7 @@ public final class IdeviceGateway: BaseDeviceGateway, DeviceGatewayAPI, @uncheck
                     let msg = self.getErrorMessage(from: installErr)
                     debugLog("[IdeviceGateway] installAppBundle() installation_proxy_install failed: \(msg)")
                     defer { idevice_error_free(installErr) }
-                    throw IdeviceGatewayError(.serviceError, reason: "安装 App 目录失败，错误：(\(msg))")
+                    throw IdeviceGatewayError(.serviceError, reason: "安装 App 目录失败，错误：（\(msg)）")
                 }
                 debugLog("[IdeviceGateway] installAppBundle() installation_proxy_install succeeded")
             }
@@ -991,7 +991,7 @@ public final class IdeviceGateway: BaseDeviceGateway, DeviceGatewayAPI, @uncheck
                     let msg = self.getErrorMessage(from: err)
                     debugLog("[IdeviceGateway] getAppPaths() installation_proxy_get_apps failed: \(msg)")
                     defer { idevice_error_free(err) }
-                    throw IdeviceGatewayError(.serviceError, reason: "查找应用路径失败，错误：(\(msg))")
+                    throw IdeviceGatewayError(.serviceError, reason: "查找应用路径失败，错误：（\(msg)）")
                 }
             }
             
@@ -1067,7 +1067,7 @@ public final class IdeviceGateway: BaseDeviceGateway, DeviceGatewayAPI, @uncheck
                     let msg = self.getErrorMessage(from: sendErr)
                     debugLog("[IdeviceGateway] sendDebugProxyCommand() failed for command \(name): \(msg)")
                     defer { idevice_error_free(sendErr) }
-                    throw IdeviceGatewayError(.serviceError, reason: "向调试代理发送命令失败：\(name)，错误：(\(msg))")
+                    throw IdeviceGatewayError(.serviceError, reason: "向调试代理发送命令失败：\(name)，错误：（\(msg)）")
                 }
                 if let response = response {
                     let respStr = String(cString: response)
@@ -1103,7 +1103,7 @@ public final class IdeviceGateway: BaseDeviceGateway, DeviceGatewayAPI, @uncheck
                 let msg = self.getErrorMessage(from: err)
                 debugLog("[IdeviceGateway] failed to start debugserver: \(msg)")
                 defer { idevice_error_free(err) }
-                throw IdeviceGatewayError(.serviceError, reason: "启动 debugserver 服务失败，错误：(\(msg))")
+                throw IdeviceGatewayError(.serviceError, reason: "启动 debugserver 服务失败，错误：（\(msg)）")
             }
         }
 
@@ -1182,7 +1182,7 @@ public final class IdeviceGateway: BaseDeviceGateway, DeviceGatewayAPI, @uncheck
             debugLog("[IdeviceGateway] connectDebugProxy debug_proxy_new failed: \(msg)")
             defer { idevice_error_free(proxyErr) }
             idevice_stream_free(stream)
-            throw IdeviceGatewayError(.serviceError, reason: "创建调试代理客户端失败，错误：(\(msg))")
+            throw IdeviceGatewayError(.serviceError, reason: "创建调试代理客户端失败，错误：（\(msg)）")
         }
         guard let debugProxyClient = debugProxyClient else {
             idevice_stream_free(stream)
@@ -1212,7 +1212,7 @@ public final class IdeviceGateway: BaseDeviceGateway, DeviceGatewayAPI, @uncheck
                 let msg = self.getErrorMessage(from: argvErr)
                 debugLog("[IdeviceGateway] launchAppPre17() debug_proxy_set_argv failed: \(msg)")
                 defer { idevice_error_free(argvErr) }
-                throw IdeviceGatewayError(.serviceError, reason: "设置调试代理参数失败，错误：(\(msg))")
+                throw IdeviceGatewayError(.serviceError, reason: "设置调试代理参数失败，错误：（\(msg)）")
             }
             if let response = response {
                 let respStr = String(cString: response)
@@ -1305,7 +1305,7 @@ public final class IdeviceGateway: BaseDeviceGateway, DeviceGatewayAPI, @uncheck
                 let msg = self.getErrorMessage(from: copyErr)
                 debugLog("[IdeviceGateway] dumpProfiles() misagent_copy_all failed: \(msg)")
                 defer { idevice_error_free(copyErr) }
-                throw IdeviceGatewayError(.serviceError, reason: "从 misagent 复制描述文件失败，错误：(\(msg))")
+                throw IdeviceGatewayError(.serviceError, reason: "从 misagent 复制描述文件失败，错误：（\(msg)）")
             }
 
             let path = docsPath.hasPrefix("file://") ? String(docsPath.dropFirst(7)) : docsPath
@@ -1357,7 +1357,7 @@ public final class IdeviceGateway: BaseDeviceGateway, DeviceGatewayAPI, @uncheck
                let msg = self.getErrorMessage(from: getErr)
                debugLog("[IdeviceGateway] performHeartbeat() heartbeat_get_marco failed: \(msg)")
                defer { idevice_error_free(getErr) }
-               throw IdeviceGatewayError(.serviceError, reason: "心跳接收失败，错误：(\(msg))")
+               throw IdeviceGatewayError(.serviceError, reason: "心跳接收失败，错误：（\(msg)）")
            }
            verboseLog("[IdeviceGateway] performHeartbeat() calling heartbeat_send_polo")
            let sendErr = heartbeat_send_polo(client)
@@ -1365,7 +1365,7 @@ public final class IdeviceGateway: BaseDeviceGateway, DeviceGatewayAPI, @uncheck
                let msg = self.getErrorMessage(from: sendErr)
                debugLog("[IdeviceGateway] performHeartbeat() heartbeat_send_polo failed: \(msg)")
                defer { idevice_error_free(sendErr) }
-               throw IdeviceGatewayError(.serviceError, reason: "心跳发送失败，错误：(\(msg))")
+               throw IdeviceGatewayError(.serviceError, reason: "心跳发送失败，错误：（\(msg)）")
            }
            debugLog("[IdeviceGateway] performHeartbeat() succeeded, newInterval: \(newInterval.pointee)")
        }
@@ -1431,7 +1431,7 @@ public final class IdeviceGateway: BaseDeviceGateway, DeviceGatewayAPI, @uncheck
                             let msg = self.getErrorMessage(from: mountErr)
                             debugLog("[IdeviceGateway] mountPersonalizedDdiRsd() mount failed: code=\(mountErr.pointee.code), message=\(msg)")
                             defer { idevice_error_free(mountErr) }
-                            throw IdeviceGatewayError(.serviceError, reason: "挂载个性化 DDI 失败，错误：(\(msg))")
+                            throw IdeviceGatewayError(.serviceError, reason: "挂载个性化 DDI 失败，错误：（\(msg)）")
                         }
                         debugLog("[IdeviceGateway] mountPersonalizedDdiRsd() mount succeeded")
                     }
@@ -1596,7 +1596,7 @@ public final class IdeviceGateway: BaseDeviceGateway, DeviceGatewayAPI, @uncheck
                         let msg = self.getErrorMessage(from: mountErr)
                         debugLog("[IdeviceGateway] mountPersonalizedDdiIdevice() mount failed: code=\(mountErr.pointee.code), message=\(msg)")
                         defer { idevice_error_free(mountErr) }
-                        throw IdeviceGatewayError(.serviceError, reason: "挂载个性化 DDI 失败，错误：(\(msg))")
+                        throw IdeviceGatewayError(.serviceError, reason: "挂载个性化 DDI 失败，错误：（\(msg)）")
                     }
                     verboseLog("[IdeviceGateway] mountPersonalizedDdiIdevice() mount succeeded")
                 }
@@ -1702,7 +1702,7 @@ public final class IdeviceGateway: BaseDeviceGateway, DeviceGatewayAPI, @uncheck
                         let msg = self.getErrorMessage(from: uploadErr)
                         debugLog("[IdeviceGateway] mountDeveloperImage() upload failed: \(msg)")
                         defer { idevice_error_free(uploadErr) }
-                        throw IdeviceGatewayError(.serviceError, reason: "上传开发者映像失败，错误：(\(msg))")
+                        throw IdeviceGatewayError(.serviceError, reason: "上传开发者映像失败，错误：（\(msg)）")
                     }
                     debugLog("[IdeviceGateway] mountDeveloperImage() upload succeeded")
                 }
@@ -1724,7 +1724,7 @@ public final class IdeviceGateway: BaseDeviceGateway, DeviceGatewayAPI, @uncheck
                     let msg = self.getErrorMessage(from: mountErr)
                     debugLog("[IdeviceGateway] mountDeveloperImage() mount failed: code=\(mountErr.pointee.code), message=\(msg)")
                     defer { idevice_error_free(mountErr) }
-                    throw IdeviceGatewayError(.serviceError, reason: "挂载开发者映像失败，错误：(\(msg))")
+                    throw IdeviceGatewayError(.serviceError, reason: "挂载开发者映像失败，错误：（\(msg)）")
                 }
                 debugLog("[IdeviceGateway] mountDeveloperImage() mount succeeded")
             }
@@ -2135,7 +2135,7 @@ public final class IdeviceGateway: BaseDeviceGateway, DeviceGatewayAPI, @uncheck
                 let msg = self.getErrorMessage(from: err)
                 debugLog("[IdeviceGateway] startHouseArrestAfc() house_arrest_vend_container failed: \(msg)")
                 defer { safeFreeError(err) }
-                throw IdeviceGatewayError(.serviceError, reason: "为 \(bundleId) 提供容器失败，错误：(\(msg))")
+                throw IdeviceGatewayError(.serviceError, reason: "为 \(bundleId) 提供容器失败，错误：（\(msg)）")
             }
             debugLog("[IdeviceGateway] startHouseArrestAfc() house_arrest_vend_container succeeded")
         }
@@ -2158,7 +2158,7 @@ public final class IdeviceGateway: BaseDeviceGateway, DeviceGatewayAPI, @uncheck
             let msg = self.getErrorMessage(from: err)
             debugLog("[IdeviceGateway] afcListDirectory() afc_list_directory failed for: \(path), error: (\(msg))")
             defer { safeFreeError(err) }
-            throw IdeviceGatewayError(.serviceError, reason: "列出目录失败：\(path)，错误：(\(msg))")
+            throw IdeviceGatewayError(.serviceError, reason: "列出目录失败：\(path)，错误：（\(msg)）")
         }
         var items: [String] = []
         if let entries = entriesRaw {
@@ -2184,7 +2184,7 @@ public final class IdeviceGateway: BaseDeviceGateway, DeviceGatewayAPI, @uncheck
             let msg = self.getErrorMessage(from: openErr)
             debugLog("[IdeviceGateway] afcReadFile() afc_file_open failed for: \(path), error: (\(msg))")
             defer { safeFreeError(openErr) }
-            throw IdeviceGatewayError(.serviceError, reason: "打开文件失败：\(path)，错误：(\(msg))")
+            throw IdeviceGatewayError(.serviceError, reason: "打开文件失败：\(path)，错误：（\(msg)）")
         }
         defer {
             verboseLog("[IdeviceGateway] afcReadFile() closing file handle")
@@ -2198,7 +2198,7 @@ public final class IdeviceGateway: BaseDeviceGateway, DeviceGatewayAPI, @uncheck
             let msg = self.getErrorMessage(from: readErr)
             debugLog("[IdeviceGateway] afcReadFile() afc_file_read_entire failed, error: (\(msg))")
             defer { safeFreeError(readErr) }
-            throw IdeviceGatewayError(.serviceError, reason: "读取文件失败：\(path)，错误：(\(msg))")
+            throw IdeviceGatewayError(.serviceError, reason: "读取文件失败：\(path)，错误：（\(msg)）")
         }
         
         if let ptr = dataPtr {

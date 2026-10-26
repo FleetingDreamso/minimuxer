@@ -137,14 +137,14 @@ final internal class MinimuxerImpl: MinimuxerAPI {
                 let uTunPresent = net.isUTunAvailable
                 if !uTunPresent {
                     debugLog("[minimuxer] minimuxer not ready: no utun interface found")
-                    return .failure(.noVPN("未检测到 utun 接口 —— LocalDevVPN 未连接"))
+                    return .failure(.noVPN("未检测到 utun 接口——LocalDevVPN 未连接"))
                 }
 
                 // check iKEv2 too if in lockdown mode and ios >= 26.4
                 if self.gateway.pairingFileType != .rppairing && !net.isIKEv2IPSecAvailable {
                     if #available(iOS 26.4, *) {
                         debugLog("[minimuxer] minimuxer not ready: no ipsec interface (required for lockdown on iOS 26.4+)")
-                        return .failure(.invalidVPN("utun 已存在但未找到 ipsec/IKEv2 接口 —— LocalDevVPN 可能不支持 iOS 26.4+ 上的 lockdown 协议"))
+                        return .failure(.invalidVPN("utun 已存在但未找到 ipsec/IKEv2 接口——LocalDevVPN 可能不支持 iOS 26.4+ 上的 lockdown 协议"))
                     }
                 }
 
@@ -181,10 +181,10 @@ final internal class MinimuxerImpl: MinimuxerAPI {
             switch connectionMode {
                 case .localVPN:
                     debugLog("[minimuxer] minimuxer not ready: failed to connect to tunnel peer IP")
-                    return .failure(.invalidVPN("VPN 隧道接口已启用且已知隧道对端 IP \(deviceIp)，但 TCP 端口轮询失败 —— 设备可能在此接口上不可达"))
+                    return .failure(.invalidVPN("VPN 隧道接口已启用且已知隧道对端 IP \(deviceIp)，但 TCP 端口轮询失败——设备可能在此接口上不可达"))
                 case .remoteServer:
                     debugLog("[minimuxer] minimuxer not ready: failed to connect to remote endpoint IP \(deviceIp)")
-                    return .failure(.notReachable("已配置远程端点 \(deviceIp)，但 TCP 端口轮询失败 —— 目标设备不可达"))
+                    return .failure(.notReachable("已配置远程端点 \(deviceIp)，但 TCP 端口轮询失败——目标设备不可达"))
                 case .notConfigured:
                     return .failure(connectionNotConfiguredError())
             }
