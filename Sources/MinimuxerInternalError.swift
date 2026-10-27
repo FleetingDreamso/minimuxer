@@ -15,9 +15,9 @@ internal enum MinimuxerInternalError: Error, LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .deviceEndpointNotInitialized: return "DeviceEndpointNotInitialized"
-        case .networkIfaceNotRefreshed: return "NetworkIfaceNotRefreshed"
-        case .pairingFailed(let msg): return "PairingFailed(\(msg))"
+        case .deviceEndpointNotInitialized: return "设备端点未初始化"
+        case .networkIfaceNotRefreshed: return "网络接口未刷新"
+        case .pairingFailed(let msg): return "配对失败（\(msg)）"
         }
     }
 }
