@@ -93,7 +93,7 @@ final internal class Mounter {
         verboseLog("[minimuxer] Downloading \(localURL.lastPathComponent)...")
         guard let data = try? Data(contentsOf: url) else {
             debugLog("[minimuxer] ERROR: Failed to download \(localURL.lastPathComponent)")
-            throw MinimuxerError.downloadImage("无法从 \(url.absoluteString) 下载文件")
+            throw MinimuxerError.downloadImage("从 \(url.absoluteString) 下载文件失败")
         }
         try data.write(to: localURL)
         return data

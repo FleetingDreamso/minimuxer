@@ -74,22 +74,22 @@ public enum MinimuxerError: Error, Equatable, CustomStringConvertible, Localized
 
     public var description: String {
         switch self {
-        case .noDevice(let r): return "设备不可用：\(r)"
+        case .noDevice(let r): return "未检测到设备：\(r)"
         case .noConnection(let r): return "无网络连接：\(r)"
-        case .notReachable(let r): return "无法连接：\(r)"
+        case .notReachable(let r): return "端点无法访问：\(r)"
         case .noVPN(let r): return "VPN 隧道未建立：\(r)"
-        case .notStarted(let r): return "未就绪：\(r)"
-        case .pairingNotLoaded(let r): return "配对不可用：\(r)"
+        case .notStarted(let r): return "尚未运行：\(r)"
+        case .pairingNotLoaded(let r): return "配对数据缺失：\(r)"
         case .restartAlreadyInProgressError(let r): return "重启已在进行中：\(r)"
         case .invalidVPN(let r): return "VPN 连接错误：\(r)"
         case .invalidPairing(let proto, let reason): return "配对无效（协议：\(proto)，原因：\(reason)）"
-        case .muxerNotListening(let r): return "服务不可用：\(r)"
+        case .muxerNotListening(let r): return "后台服务未运行：\(r)"
         case .createDebug(let r): return "创建调试服务失败：\(r)"
         case .createInstproxy(let r): return "创建 instproxy 服务失败：\(r)"
         case .createLockdown(let r): return "创建 lockdown 服务失败：\(r)"
         case .createCoreDevice(let r): return "创建 CoreDevice 服务失败：\(r)"
         case .createSoftwareTunnel(let r): return "创建软件隧道失败：\(r)"
-        case .createRemoteServer(let r): return "创建远程服务失败：\(r)"
+        case .createRemoteServer(let r): return "创建远程服务器失败：\(r)"
         case .createProcessControl(let r): return "创建进程控制服务失败：\(r)"
         case .getLockdownValue(let r): return "读取 lockdown 值失败：\(r)"
         case .fetchUDID(let r): return "获取 UDID 失败：\(r)"
@@ -119,7 +119,7 @@ public enum MinimuxerError: Error, Equatable, CustomStringConvertible, Localized
         case .imageLookup(let r): return "查询磁盘映像失败：\(r)"
         case .imageRead(let r): return "读取磁盘映像失败：\(r)"
         case .mount(let proto, let reason): return "挂载磁盘映像失败（协议：\(proto)，原因：\(reason)）"
-        case .connectionModeNotConfigured(let r): return "连接配置有误：\(r)"
+        case .connectionModeNotConfigured(let r): return "缺少连接配置：\(r)"
         }
     }
 

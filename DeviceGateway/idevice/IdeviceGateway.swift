@@ -1040,7 +1040,7 @@ public final class IdeviceGateway: BaseDeviceGateway, DeviceGatewayAPI, @uncheck
             
             if container.isEmpty || bundlePath.isEmpty {
                 debugLog("[IdeviceGateway] getAppPaths() container or bundlePath is empty")
-                throw IdeviceGatewayError(.serviceError, reason: "无法解析应用路径")
+                throw IdeviceGatewayError(.serviceError, reason: "解析应用路径失败")
             }
             return (container, bundlePath, executableName)
         }
@@ -1305,7 +1305,7 @@ public final class IdeviceGateway: BaseDeviceGateway, DeviceGatewayAPI, @uncheck
                 let msg = self.getErrorMessage(from: copyErr)
                 debugLog("[IdeviceGateway] dumpProfiles() misagent_copy_all failed: \(msg)")
                 defer { idevice_error_free(copyErr) }
-                throw IdeviceGatewayError(.serviceError, reason: "从 misagent 复制描述文件失败，错误：（\(msg)）")
+                throw IdeviceGatewayError(.serviceError, reason: "从 misagent 拷贝描述文件失败，错误：（\(msg)）")
             }
 
             let path = docsPath.hasPrefix("file://") ? String(docsPath.dropFirst(7)) : docsPath
